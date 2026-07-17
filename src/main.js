@@ -1,84 +1,38 @@
-import Phaser from 'phaser'
+import Phaser from "phaser";
+import GameScene from "./scenes/GameScene.js";
 
-class GameScene extends Phaser.Scene {
+const config={
 
-    constructor() {
-        super('Game')
-    }
+type:Phaser.AUTO,
 
-    create() {
+parent:"game",
 
-        this.cameras.main.setBackgroundColor('#111827')
+width:720,
 
-        const size = 90
+height:1280,
 
-        this.board = []
+backgroundColor:"#0f172a",
 
-        for (let y = 0; y < 6; y++) {
+scene:[
+GameScene
+],
 
-            this.board[y] = []
+scale:{
 
-            for (let x = 0; x < 6; x++) {
+mode:Phaser.Scale.FIT,
 
-                let tile = this.add.rectangle(
-                    120 + x * size,
-                    120 + y * size,
-                    70,
-                    70,
-                    0x2d3748
-                )
+autoCenter:Phaser.Scale.CENTER_BOTH
 
-                tile.setStrokeStyle(4,0xffffff)
+},
 
-                tile.rotation = Phaser.Math.Between(0,3) * Math.PI / 2
+render:{
 
-                tile.setInteractive()
+pixelArt:false,
 
-                tile.on('pointerdown',()=>{
-
-                    tile.rotation += Math.PI/2
-
-                })
-
-                this.board[y][x]=tile
-
-            }
-
-        }
-
-        this.add.text(
-            20,
-            20,
-            'PIPE RESCUE PROTOTYPE',
-            {
-                fontSize:'28px',
-                color:'#ffffff'
-            }
-        )
-
-    }
+antialias:true
 
 }
 
-const config = {
+};
 
-    type: Phaser.AUTO,
-
-    parent:'game',
-
-    width:720,
-
-    height:1280,
-
-    backgroundColor:'#111827',
-
-    scene:[GameScene],
-
-    scale:{
-        mode:Phaser.Scale.FIT,
-        autoCenter:Phaser.Scale.CENTER_BOTH
-    }
-
-}
-
-new Phaser.Game(config)
+new Phaser.Game(config);

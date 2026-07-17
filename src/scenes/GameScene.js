@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import Board from "../game/Board.js";
 import WaterFlow from "../game/WaterFlow.js";
+import WaterAnimation from "../game/WaterAnimation.js";
 import PipeRenderer from "../game/PipeRenderer.js";
 import Level1 from "../levels/Level1.js";
 
@@ -29,34 +30,36 @@ this.tiles=[];
 
 this.drawGrid();
 this.drawPipes();
-this.createHUD();
 
-this.updateBoard();
-
-}
-
-createHUD(){
+this.anim=new WaterAnimation(
+this,
+this.board,
+this.tiles,
+this.tileSize
+);
 
 this.title=this.add.text(
 40,
 40,
 "PIPE RESCUE",
 {
-fontSize:"40px",
-color:"#ffffff",
-fontStyle:"bold"
+fontSize:"42px",
+fontStyle:"bold",
+color:"#ffffff"
 }
 );
 
-this.status=this.add.text(
+this.info=this.add.text(
 40,
-95,
-"Connect Start → End",
+96,
+"Rotate pipes",
 {
 fontSize:"22px",
-color:"#94a3b8"
+color:"#93c5fd"
 }
 );
+
+this.refresh();
 
 }
 
@@ -69,11 +72,17 @@ this.tiles[y]=[];
 for(let x=0;x<this.board.width;x++){
 
 const bg=this.add.rectangle(
+
 this.offsetX+x*this.tileSize,
+
 this.offsetY+y*this.tileSize,
+
 82,
+
 82,
+
 0x1e293b
+
 );
 
 bg.setStrokeStyle(
@@ -87,13 +96,14 @@ bg.on("pointerdown",()=>{
 
 this.board.rotate(x,y);
 
-this.updateBoard();
+this.refresh();
 
 });
 
 this.tiles[y][x]={
 
 background:bg,
+
 pipe:null
 
 };
@@ -112,20 +122,19 @@ for(let x=0;x<this.board.width;x++){
 
 const tile=this.tiles[y][x];
 
-if(tile.pipe){
-
+if(tile.pipe)
 tile.pipe.destroy();
-
-}
-
-const pipe=this.board.get(x,y);
 
 tile.pipe=PipeRenderer.draw(
 
 this,
-pipe,
+
+this.board.get(x,y),
+
 this.offsetX+x*this.tileSize,
+
 this.offsetY+y*this.tileSize,
+
 64
 
 );
@@ -136,47 +145,29 @@ this.offsetY+y*this.tileSize,
 
 }
 
-updateBoard(){
+refresh(){
 
 const solved=this.flow.start();
+
+this.drawPipes();
+
+this.anim.play();
 
 for(let y=0;y<this.board.height;y++){
 
 for(let x=0;x<this.board.width;x++){
 
-const tile=this.tiles[y][x];
-
-if(tile.pipe){
-
-tile.pipe.destroy();
-
-}
-
 const pipe=this.board.get(x,y);
 
-tile.pipe=PipeRenderer.draw(
+this.tiles[y][x].background.setFillStyle(
 
-this,
-pipe,
-this.offsetX+x*this.tileSize,
-this.offsetY+y*this.tileSize,
-64
+pipe.powered
+
+?0x0ea5e9
+
+:0x1e293b
 
 );
-
-if(pipe.powered){
-
-tile.background.setFillStyle(
-0x0ea5e9
-);
-
-}else{
-
-tile.background.setFillStyle(
-0x1e293b
-);
-
-}
 
 }
 
@@ -184,15 +175,15 @@ tile.background.setFillStyle(
 
 if(solved){
 
-this.status.setText("LEVEL COMPLETED");
+this.info.setText("LEVEL COMPLETED");
 
-this.status.setColor("#22c55e");
+this.info.setColor("#22c55e");
 
 }else{
 
-this.status.setText("Connect Start → End");
+this.info.setText("Rotate pipes");
 
-this.status.setColor("#94a3b8");
+this.info.setColor("#93c5fd");
 
 }
 

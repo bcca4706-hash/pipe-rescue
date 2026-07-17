@@ -1,0 +1,89 @@
+name: Android Release
+
+on:
+
+  push:
+
+    branches:
+
+      - main
+
+  workflow_dispatch:
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout
+
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+
+        uses: actions/setup-node@v4
+
+        with:
+
+          node-version: 22
+
+      - name: Install
+
+        run: npm install
+
+      - name: Build Web
+
+        run: npm run build
+
+      - name: Setup Java
+
+        uses: actions/setup-java@v4
+
+        with:
+
+          distribution: temurin
+
+          java-version: 17
+
+      - name: Sync Capacitor
+
+        run: |
+
+          npm install -g @capacitor/cli
+          npx cap sync android
+
+      - name: Decode Keystore
+
+        run: |
+
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore
+
+      - name: Build Release AAB
+
+        working-directory: android
+
+        env:
+
+          PIPE_KEYSTORE: app/release.keystore
+          PIPE_STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          PIPE_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          PIPE_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+        run: |
+
+          chmod +x gradlew
+          ./gradlew bundleRelease
+
+      - name: Upload Artifact
+
+        uses: actions/upload-artifact@v4
+
+        with:
+
+          name: PipeRescue-AAB
+
+          path: android/app/build/outputs/bundle/release/*.aab
+

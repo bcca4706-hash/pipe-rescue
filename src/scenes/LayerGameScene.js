@@ -26,40 +26,36 @@ this.offsetY=220;
 
 this.tiles=[];
 
-this.add.text(
+this.moves=0;
 
+this.pressStart=0;
+
+this.title=this.add.text(
 40,
 40,
 "PIPE RESCUE",
-
 {
-
 fontSize:"42px",
 fontStyle:"bold",
 color:"#ffffff"
-
 }
-
 );
 
-this.add.text(
-
+this.info=this.add.text(
 40,
 96,
-"Tap = Rotate   Hold = Next Layer",
-
+"Moves : 0",
 {
-
 fontSize:"22px",
-color:"#94a3b8"
-
+color:"#8ecdf7"
 }
-
 );
 
 this.createGrid();
 
 this.renderBoard();
+
+this.flow.start(0,0,0);
 
 }
 
@@ -85,53 +81,45 @@ this.offsetY+y*this.tileSize,
 
 );
 
-bg.setStrokeStyle(
-
-3,
-
-0x314155
-
-);
+bg.setStrokeStyle(3,0x314155);
 
 bg.setInteractive();
 
 bg.on("pointerdown",()=>{
 
-this.board.rotate(x,y);
-
-this.refreshCell(x,y);
+this.pressStart=this.time.now;
 
 });
 
-bg.on("pointerup",()=>{});
+bg.on("pointerup",()=>{
 
-bg.on("pointerover",()=>{});
+const held=this.time.now-this.pressStart;
 
-bg.on("pointerout",()=>{});
-
-bg.on("pointermove",()=>{});
-
-bg.on("pointerdown",(pointer)=>{
-
-this.pressTime=this.time.now;
-
-});
-
-bg.on("pointerup",(pointer)=>{
-
-if(this.time.now-this.pressTime>350){
+if(held>350){
 
 this.board.nextLayer(x,y);
+
+}else{
+
+this.board.rotate(x,y);
+
+this.moves++;
+
+this.info.setText("Moves : "+this.moves);
 
 }
 
 this.refreshCell(x,y);
 
+this.flow.start(0,0,0);
+
+this.updatePowered();
+
 });
 
 this.tiles[y][x]={
 
-bg,
+background:bg,
 
 pipe:null
 
@@ -181,13 +169,31 @@ this.offsetY+y*this.tileSize,
 
 );
 
-LayerRenderer.pulse(
+}
 
-this,
+updatePowered(){
 
-tile.pipe
+const cells=this.flow.poweredCells();
 
+for(let y=0;y<this.board.height;y++){
+
+for(let x=0;x<this.board.width;x++){
+
+this.tiles[y][x].background.setFillStyle(
+0x18212f
 );
+
+}
+
+}
+
+cells.forEach(c=>{
+
+this.tiles[c.y][c.x].background.setFillStyle(
+0x0ea5e9
+);
+
+});
 
 }
 
